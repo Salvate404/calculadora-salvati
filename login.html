@@ -115,6 +115,7 @@
             if (senhasPermitidas.includes(senhaDigitada)) {
                 // Se a senha estiver correta, redireciona para a página principal (ou outra página)
                 // Altere 'index.html' para o nome do seu arquivo principal, se for diferente
+                localStorage.setItem('usuarioLogado', 'true');
                 window.location.href = 'kindex.html';
             } else {
                 // Se a senha estiver incorreta, exibe uma mensagem de erro
