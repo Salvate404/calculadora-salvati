@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Seu Site</title>
+    
     <style>
         /* --- ESTILOS CSS EMBUTIDOS (Copiados do seu site principal) --- */
         body {
@@ -113,10 +114,12 @@
 
             // Verifica se a senha digitada está no array de senhas permitidas
             if (senhasPermitidas.includes(senhaDigitada)) {
-                // Se a senha estiver correta, redireciona para a página principal (ou outra página)
-                // Altere 'index.html' para o nome do seu arquivo principal, se for diferente
+                // Se a senha estiver correta, define as flags de login e tempo no localStorage
                 localStorage.setItem('usuarioLogado', 'true');
-                window.location.href = 'kindex.html';
+                localStorage.setItem('tempoLogin', Date.now().toString()); // Salva o timestamp
+
+                // Redireciona para a página principal (index.html)
+                window.location.href = 'index.html';
             } else {
                 // Se a senha estiver incorreta, exibe uma mensagem de erro
                 mensagemErro.textContent = "Senha incorreta. Tente novamente.";
