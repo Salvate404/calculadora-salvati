@@ -6,10 +6,40 @@
     <title>Calculadora de Toldos</title>
 
     <script>
-        // Verifica se a flag 'usuarioLogado' está definida no localStorage
-        if (localStorage.getItem('usuarioLogado') !== 'true') {
-            // Se não estiver logado, redireciona para a página de login
+        const TEMPO_LIMITE_MINUTOS = 5; // Duração da sessão em minutos
+        const TEMPO_LIMITE_MILISSEGUNDOS = TEMPO_LIMITE_MINUTOS * 60 * 1000;
+
+        // Função para limpar o localStorage e redirecionar para o login
+        function deslogarERedirecionar() {
+            console.log("Deslogando e redirecionando para o login...");
+            localStorage.removeItem('usuarioLogado');
+            localStorage.removeItem('tempoLogin');
             window.location.href = 'login.html';
+        }
+
+        // --- LÓGICA DE VERIFICAÇÃO DE SESSÃO ---
+        const usuarioLogado = localStorage.getItem('usuarioLogado');
+        const tempoLoginString = localStorage.getItem('tempoLogin');
+
+        if (usuarioLogado === 'true' && tempoLoginString) {
+            const tempoLogin = parseInt(tempoLoginString, 10);
+            const tempoAtual = Date.now();
+            const tempoDecorrido = tempoAtual - tempoLogin;
+
+            // Se o tempo decorrido é maior ou igual ao limite, a sessão expirou
+            if (tempoDecorrido >= TEMPO_LIMITE_MILISSEGUNDOS) {
+                console.log("Sessão expirada no carregamento da página.");
+                deslogarERedirecionar();
+            } else {
+                // Sessão ativa, agendar o deslogamento
+                const tempoRestante = TEMPO_LIMITE_MILISSEGUNDOS - tempoDecorrido;
+                console.log(`Sessão ativa. Redirecionamento agendado em ${Math.ceil(tempoRestante / 1000)} segundos.`);
+                setTimeout(deslogarERedirecionar, tempoRestante);
+            }
+        } else {
+            // Se não encontrou a flag de login ou o tempo de login, redireciona
+            console.log("Usuário não logado ou dados de sessão incompletos.");
+            deslogarERedirecionar();
         }
     </script>
 
