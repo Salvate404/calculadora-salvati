@@ -87,8 +87,9 @@
             font-weight: bold;
         }
 
-        input[type="number"], select {
-            width: calc(100% - 22px); /* Ajusta largura com padding e borda */
+        /* ATENÇÃO: Alterado de input[type="number"] para input[type="text"] para a formatação inteligente */
+        input[type="text"], select {
+            width: 100%; /* Ajusta largura com padding e borda */
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ddd;
@@ -165,26 +166,6 @@
     </style>
 </head>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <body>
     <div class="container"> 
         <a href="login.html">Login</a>
@@ -192,22 +173,17 @@
 
         <div class="input-group">
             <label for="largura">Largura:</label>
-            <input type="number" id="largura" placeholder="Ex: 2,5" step="0.01" min="0">
+            <input type="text" id="largura" placeholder="0,00" value="0,00" oninput="formatarMedida(this)">
         </div>
 
         <div class="input-group">
             <label id="medidaSecundariaLabel" for="medidaSecundaria">Caimento (Sem bandor):</label>
-            <input type="number" id="medidaSecundaria" placeholder="Ex: 2,0" step="0.01" min="0">
+            <input type="text" id="medidaSecundaria" placeholder="0,00" value="0,00" oninput="formatarMedida(this)">
         </div>
 
         <div class="select-group">
             <label>Tipo de Toldo:</label>
             <div class="option-buttons">
-
-
-
-                                                                                                                                
-
                 <button id="btnCortina" data-type="cortina" class="selected">
                     Cortina
                 </button>
@@ -216,20 +192,6 @@
                 </button>
             </div>
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <div class="select-group">
             <label for="marcaLona">Marca da Lona:</label>
@@ -242,23 +204,67 @@
         </div>
     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <script>
-        /* --- CÓDIGO JAVASCRIPT EMBUTIDO --- */
+        // --- FUNÇÕES DE FORMATAÇÃO E OBTENÇÃO DE VALOR NUMÉRICO ---
+        // Estas funções precisam estar no topo deste bloco de script
+        // para que o HTML consiga chamá-las via 'oninput'.
+
+        function formatarMedida(inputElement) {
+            let valor = inputElement.value;
+
+            // 1. Remover TUDO que não for dígito. Isso impede letras e símbolos.
+            valor = valor.replace(/\D/g, ''); 
+
+            // 2. Tratar o caso de valor vazio após a limpeza (usuário apagou tudo)
+            if (valor.length === 0) {
+                valor = '0'; // Se não houver dígitos, definimos como '0'
+            }
+
+            // 3. Converte o valor para um número inteiro temporariamente para remover zeros à esquerda irrelevantes
+            // Ex: "007" vira 7. "01" vira 1.
+            let numValue = parseInt(valor, 10);
+
+            // 4. Se o número for 0 (após parseInt), mas o usuário digitou algo (ex: '0' ou apagou), 
+            // queremos que a base seja '0,00'.
+            if (numValue === 0) {
+                valor = '000'; // Prepara para '0,00'
+            } else {
+                // Converte o número de volta para string sem zeros iniciais inúteis
+                valor = numValue.toString();
+
+                // Garante que a string tenha pelo menos 3 dígitos para o formato X,YY ou 0,YY
+                while (valor.length < 3) {
+                    valor = '0' + valor;
+                }
+            }
+
+            // 5. Inserir a vírgula duas posições antes do final
+            const parteInteira = valor.slice(0, -2);
+            const parteDecimal = valor.slice(-2);
+
+            // Formata o valor final
+            const valorFormatado = `${parteInteira === '' ? '0' : parteInteira},${parteDecimal}`;
+
+            // 6. Atualizar o valor do input
+            inputElement.value = valorFormatado;
+
+            // 7. CHAMAR A FUNÇÃO DE CÁLCULO AQUI!
+            // Isso fará com que o preço seja recalculado e atualizado a cada dígito.
+            calcularPreco(); 
+        }
+
+        // Função auxiliar para obter o valor numérico dos inputs formatados
+        function getNumericValue(elementId) {
+            const inputElement = document.getElementById(elementId);
+            if (!inputElement) return 0;
+
+            let valorFormatado = inputElement.value;
+            valorFormatado = valorFormatado.replace(',', '.'); // Substitui vírgula por ponto
+            return parseFloat(valorFormatado) || 0; // Retorna 0 se o parsing falhar (garantindo que não seja NaN)
+        }
+
+
+        // --- SEU CÓDIGO JAVASCRIPT EXISTENTE A PARTIR DAQUI ---
 
         // Referências aos elementos HTML
         const larguraInput = document.getElementById('largura');
@@ -270,7 +276,6 @@
         const valorTotalSpan = document.getElementById('valorTotal');
 
         // --- DEFINA AQUI SEUS PREÇOS E VARIÁVEIS ---
-        // PREÇOS POR METRO QUADRADO (m²) para lonas
         const precosLona = {
             "Sansuy: R$ 35,70": 35.70,
             "SL: R$ 27,05": 27.05,
@@ -280,34 +285,29 @@
             "Lowick: R$ 30,00": 30.00
         };
 
-        // PREÇOS FIXOS PARA COSTURA MÍNIMA
         const precoMinCosturaCortina = 45.00;
         const precoMinCosturaCapota = 45.00;
 
-        // Constantes para cálculos
-        const LONA_PADRAO_LARGURA = 1.40; // Largura padrão do pano de lona em metros
-        const CORTINA_COSTURA_M2_RATE = 4.50; // Preço da costura por metro quadrado para cortina
-        const CAPOTA_COSTURA_M2_RATE = 7.80; // Preço da costura por metro quadrado para capota
+        const LONA_PADRAO_LARGURA = 1.40;
+        const CORTINA_COSTURA_M2_RATE = 4.50;
+        const CAPOTA_COSTURA_M2_RATE = 7.80;
 
-        // Variáveis para armazenar as seleções do usuário
-        let tipoToldoSelecionado = 'cortina'; // Padrão inicial: Cortina
+        let tipoToldoSelecionado = 'cortina';
 
         // --- Funções de Inicialização e Lógica ---
 
         function init() {
-            // Preenche o <select> de marcas de lona
             for (const marca in precosLona) {
                 const option = document.createElement('option');
                 option.value = marca;
                 option.textContent = marca;
                 marcaLonaSelect.appendChild(option);
             }
-            // Seleciona a primeira opção por padrão
             marcaLonaSelect.value = Object.keys(precosLona)[1];
 
-            updateMeasureLabel(); // Atualiza o label da medida secundária no início
-            updatePriceList(); // Atualiza a lista de preços inicialmente
-            calcularPreco(); // Calcula o preço inicial
+            updateMeasureLabel();
+            updatePriceList();
+            calcularPreco();
         }
 
         function updateMeasureLabel() {
@@ -320,43 +320,11 @@
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /**
-         * Calcula o preço para o tipo "Cortina".
-         * @param {number} largura - Largura do toldo.
-         * @param {number} caimento - Caimento do toldo.
-         * @param {number} precoM2Lona - Preço do m² da lona.
-         * @returns {object} Objeto com precoLona e precoCostura.
-         */
         function calcularPrecoCortina(largura, caimento, precoM2Lona) {
             const pano = Math.ceil((largura - 0.000000000000001) / 1.4);
-            const metragem = pano * (caimento + 0.10); // Aumento de 0.10m para cada pano
+            const metragem = pano * (caimento + 0.10);
             const precoLona = metragem * precoM2Lona;
-            let precoCostura = (Math.ceil(largura) * CORTINA_COSTURA_M2_RATE * (caimento + 0.10)); // Custo de costura baseado em largura*caimento
+            let precoCostura = (Math.ceil(largura) * CORTINA_COSTURA_M2_RATE * (caimento + 0.10));
 
             if (precoCostura < precoMinCosturaCortina) {
                 precoCostura = precoMinCosturaCortina;
@@ -364,45 +332,13 @@
             return { precoLona, precoCostura };
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /**
-         * Calcula o preço para o tipo "Capota".
-         * @param {number} largura - Largura da capota.
-         * @param {number} perna - Perna da capota.
-         * @param {number} precoM2Lona - Preço do m² da lona.
-         * @returns {object} Objeto com precoLona e precoCostura.
-         */
         function calcularPrecoCapota(largura, perna, precoM2Lona) {
             const larg = largura + (2 * perna)
             const pern = 2 * perna
             const pano = Math.ceil((larg - 0.00000000000001) / LONA_PADRAO_LARGURA);
-            const metragem = pano * pern; // Aumento de 0.10m para cada pano
+            const metragem = pano * pern;
             const precoLona = metragem * precoM2Lona;
-            let precoCostura = (Math.ceil(larg)) * CAPOTA_COSTURA_M2_RATE * pern; // Custo de costura baseado em largura*caimento
+            let precoCostura = (Math.ceil(larg)) * CAPOTA_COSTURA_M2_RATE * pern;
 
             if (precoCostura < precoMinCosturaCapota) {
                 precoCostura = precoMinCosturaCapota;
@@ -410,35 +346,12 @@
             return { precoLona, precoCostura };
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         function calcularPreco() {
-            const largura = parseFloat(larguraInput.value);
-            const medidaSecundaria = parseFloat(medidaSecundariaInput.value);
+            const largura = getNumericValue('largura');
+            const medidaSecundaria = getNumericValue('medidaSecundaria');
 
-            // Validação aprimorada dos inputs
-            if (isNaN(largura) || largura <= 0) {
+            if (largura <= 0 || medidaSecundaria <= 0) {
                 valorTotalSpan.textContent = "R$ 0,00";
-                return;
-            }
-            if (isNaN(medidaSecundaria) || medidaSecundaria <= 0) {
-                valorTotalSpan.textContent = `R$ 0,00`;
                 return;
             }
 
@@ -458,17 +371,18 @@
         }
 
         // --- Event Listeners ---
+        // Remova os listeners 'input' daqui, pois eles já são chamados via 'oninput' no HTML
+        // larguraInput.addEventListener('input', calcularPreco);
+        // medidaSecundariaInput.addEventListener('input', calcularPreco);
 
-        larguraInput.addEventListener('input', calcularPreco);
-        medidaSecundariaInput.addEventListener('input', calcularPreco);
         marcaLonaSelect.addEventListener('change', calcularPreco);
 
         tipoToldoButtons.forEach(button => {
             button.addEventListener('click', () => {
-                tipoToldoButtons.forEach(btn => btn.classList.remove('selected')); // Remove seleção de todos
-                button.classList.add('selected'); // Adiciona seleção ao clicado
+                tipoToldoButtons.forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
                 tipoToldoSelecionado = button.dataset.type;
-                updateMeasureLabel(); // Atualiza o label do campo secundário
+                updateMeasureLabel();
                 calcularPreco();
             });
         });
