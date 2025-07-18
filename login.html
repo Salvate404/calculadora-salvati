@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Seu Site</title>
+    <style>
+        /* --- ESTILOS CSS EMBUTIDOS (Copiados do seu site principal) --- */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        .input-group { /* Usei .input-group para alinhar com seus estilos existentes */
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="password"] { /* Específico para senha */
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+            width: 100%; /* Botão de largura total */
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #mensagemErro {
+            color: #dc3545; /* Cor vermelha para mensagens de erro */
+            margin-top: 15px;
+            font-weight: bold;
+            display: none; /* Escondido por padrão */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Somente pessoas cadastradas</h1>
+        <p>A Salvati agradece</p>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" placeholder="Digite sua senha" required>
+            </div>
+            <button type="submit">Entrar</button>
+            <p id="mensagemErro"></p>
+        </form>
+    </div>
+
+    <script>
+        // Array com as senhas permitidas
+        // MUITO IMPORTANTE: Em um ambiente real, NUNCA armazene senhas diretamente no código JavaScript do lado do cliente.
+        // Isso é apenas para sua necessidade específica de "poucas pessoas e sem backend".
+        const senhasPermitidas = ["121", "122", "123"]; // <-- ALtere essas senhas!
+
+        const loginForm = document.getElementById('loginForm');
+        const senhaInput = document.getElementById('senha');
+        const mensagemErro = document.getElementById('mensagemErro');
+
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+
+            const senhaDigitada = senhaInput.value;
+
+            // Verifica se a senha digitada está no array de senhas permitidas
+            if (senhasPermitidas.includes(senhaDigitada)) {
+                // Se a senha estiver correta, redireciona para a página principal (ou outra página)
+                // Altere 'index.html' para o nome do seu arquivo principal, se for diferente
+                window.location.href = 'kindex.html';
+            } else {
+                // Se a senha estiver incorreta, exibe uma mensagem de erro
+                mensagemErro.textContent = "Senha incorreta. Tente novamente.";
+                mensagemErro.style.display = 'block'; // Mostra a mensagem
+                senhaInput.value = ''; // Limpa o campo da senha
+            }
+        });
+    </script>
+</body>
+</html>
