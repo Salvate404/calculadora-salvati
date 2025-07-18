@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Toldos</title>
+
+    <script>
+        // Verifica se a flag 'usuarioLogado' está definida no localStorage
+        if (localStorage.getItem('usuarioLogado') !== 'true') {
+            // Se não estiver logado, redireciona para a página de login
+            window.location.href = 'login.html';
+        }
+    </script>
+
+
     <style>
         /* --- ESTILOS CSS EMBUTIDOS --- */
         body {
